@@ -1,0 +1,935 @@
+/* ================================================================
+   ESTILOS GLOBALES DE CINESTOCK
+   ================================================================
+   Este archivo contiene los estilos compartidos por todas las páginas.
+   Se organizan en:
+   1. Reset y estilos base
+   2. Header y navegación
+   3. Layout principal
+   4. Formularios
+   5. Tarjetas de equipo
+   6. Tablas de datos
+   7. Botones y badges
+   8. Login box
+   9. Media queries (responsive)
+   ================================================================ */
+
+/* --- 1. Reset y estilos base --- */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+    background-color: #f4f6f8;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* --- 2. Header y navegación --- */
+header {
+    background-color: #1e293b;
+    color: #fff;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+header h1 {
+    font-size: 1.2rem;
+    white-space: nowrap;
+}
+
+header nav ul {
+    list-style: none;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+header nav a {
+    color: #cbd5e1;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 0.85rem;
+}
+
+header nav a.active, header nav a:hover {
+    color: #38bdf8;
+}
+
+/* --- 3. Layout principal --- */
+main {
+    padding: 2rem;
+    padding-bottom: 3rem;
+    flex: 1;
+}
+
+.layout-split {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+}
+
+.catalog-section { flex: 2; min-width: 0; }
+
+.cart-section {
+    flex: 1;
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    height: fit-content;
+    min-width: 280px;
+    position: sticky;
+    top: 1rem;
+}
+
+/* --- 4. Formularios --- */
+.form-group {
+    margin-bottom: 1.2rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+
+.form-group input, .form-group select {
+    width: 100%;
+    padding: 0.6rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.95rem;
+}
+
+.filtros-bar {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.filtros-bar .form-group {
+    flex: 1;
+    min-width: 140px;
+}
+
+/* --- 5. Tarjetas de equipo --- */
+.grid-equipos {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.card-equipo {
+    background: white;
+    padding: 1rem;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.card-equipo:hover {
+    border-color: #0284c7;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.card-equipo-foto {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: contain;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    margin-bottom: 0.75rem;
+}
+
+.cart-item-thumb {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.cart-item-info {
+    flex: 1;
+    min-width: 0;
+}
+
+/* --- 6. Tablas de datos --- */
+.tabla-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    background: white;
+    font-size: 0.9rem;
+}
+
+.data-table th, .data-table td {
+    padding: 10px 12px;
+    border: 1px solid #e2e8f0;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.data-table th {
+    background-color: #334155;
+    color: white;
+    position: sticky;
+    top: 0;
+}
+
+/* --- 7. Botones y badges --- */
+button, .btn-primary, .btn-action {
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 4px;
+    background-color: #0284c7;
+    color: white;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 0.9rem;
+}
+
+button:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+}
+
+.btn-success { background-color: #16a34a; }
+.btn-danger { background-color: #dc2626; margin-left: 0.5rem; }
+
+.badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    color: white;
+    white-space: nowrap;
+}
+
+.warning { background-color: #d97706; }
+.success { background-color: #16a34a; }
+.danger { background-color: #dc2626; }
+
+/* --- 8. Login box --- */
+.login-box {
+    max-width: 400px;
+    margin: 3rem auto;
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+/* --- 9. Media queries (Responsive) ==================================================== */
+
+/*
+ * MÓVIL (hasta 480px):
+ * - Header apilado verticalmente
+ * - Layout split apilado (catálogo arriba, carrito abajo)
+ * - Tarjetas de equipo a 1 columna
+ * - Tablas con scroll horizontal
+ * - Login box más ancho
+ */
+
+/* TABLET (481px - 768px) */
+@media (max-width: 768px) {
+    header {
+        padding: 0.75rem 1rem;
+        flex-direction: column;
+        text-align: center;
+        gap: 0.5rem;
+    }
+
+    header h1 {
+        font-size: 1.1rem;
+    }
+
+    header nav ul {
+        gap: 8px;
+        justify-content: center;
+    }
+
+    header nav a {
+        font-size: 0.8rem;
+    }
+
+    main {
+        padding: 1rem;
+        padding-bottom: 2rem;
+    }
+
+    .layout-split {
+        flex-direction: column;
+    }
+
+    .cart-section {
+        min-width: unset;
+        width: 100%;
+        position: static;
+    }
+
+    .grid-equipos {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 0.75rem;
+    }
+
+    .card-equipo {
+        padding: 0.75rem;
+    }
+
+    .data-table th, .data-table td {
+        padding: 8px;
+        font-size: 0.85rem;
+    }
+
+    .login-box {
+        margin: 2rem auto;
+        padding: 1.5rem;
+    }
+
+    .filtros-bar {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .filtros-bar .form-group {
+        min-width: unset;
+    }
+}
+
+/* MÓVIL (hasta 480px) */
+@media (max-width: 480px) {
+    header {
+        padding: 0.6rem 0.75rem;
+    }
+
+    header h1 {
+        font-size: 1rem;
+    }
+
+    header nav ul {
+        gap: 6px;
+    }
+
+    header nav a {
+        font-size: 0.75rem;
+    }
+
+    main {
+        padding: 0.75rem;
+        padding-bottom: 1.5rem;
+    }
+
+    .grid-equipos {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .card-equipo h4 {
+        font-size: 0.95rem;
+    }
+
+    .card-equipo p {
+        font-size: 0.8rem;
+    }
+
+    .card-equipo button {
+        width: 100%;
+        padding: 0.5rem;
+    }
+
+    /* Tablas: scroll horizontal en móvil */
+    .tabla-wrapper {
+        margin: 0 -0.75rem;
+        padding: 0 0.75rem;
+    }
+
+    .data-table {
+        min-width: 600px;
+    }
+
+    .login-box {
+        margin: 1rem auto;
+        padding: 1.25rem;
+    }
+
+    .login-box h2 {
+        font-size: 1.1rem;
+    }
+
+    /* Stats grid del director */
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    .stat-card h3 {
+        font-size: 1.5rem;
+    }
+
+    .stat-card p {
+        font-size: 0.75rem;
+    }
+
+    /* Botones de acción en panolero */
+    .acciones-reserva {
+        flex-direction: column;
+    }
+
+    .btn-sm {
+        width: 100%;
+        text-align: center;
+    }
+
+    /* Remito de confirmación */
+    .remito {
+        padding: 1rem;
+        margin: 1rem auto;
+    }
+
+    .remito-detalle strong {
+        width: 140px;
+        font-size: 0.85rem;
+    }
+
+    /* Header del director: título y botón apilados */
+    .header-accion {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .header-accion h2 {
+        font-size: 1rem;
+    }
+}
+
+/* LAPTOP (769px - 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .grid-equipos {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* MONITOR (más de 1024px) - estilo base actual */
+@media (min-width: 1025px) {
+    .stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* --- 10. Usuario en el header --- */
+.header-usuario {
+    color: #e2e8f0;
+    font-size: 0.85rem;
+    font-weight: bold;
+    align-self: center;
+}
+
+/* --- 11. Modales compartidos --- */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+}
+
+.modal-overlay.visible {
+    display: flex;
+}
+
+.modal {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    max-width: 480px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+}
+
+.modal h3 {
+    margin: 0 0 0.75rem;
+    color: #1e293b;
+}
+
+.modal-cuerpo {
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.modal-cuerpo p {
+    margin-bottom: 0.75rem;
+}
+
+.modal-detalle {
+    background: #f1f5f9;
+    border-radius: 6px;
+    padding: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.modal-detalle p {
+    margin-bottom: 0.5rem;
+}
+
+.modal-lista {
+    margin: 0.4rem 0 0.6rem 1.2rem;
+}
+
+.modal-lista li {
+    margin-bottom: 0.25rem;
+}
+
+.modal-botones {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 1.25rem;
+    flex-wrap: wrap;
+}
+
+.btn-secundario {
+    background-color: #6b7280;
+}
+
+.texto-secundario {
+    color: #64748b;
+    font-size: 0.85rem;
+}
+
+/* --- 12. Pestañas --- */
+.tabs {
+    display: flex;
+    gap: 0.5rem;
+    border-bottom: 2px solid #e2e8f0;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.tab-btn {
+    background: transparent;
+    color: #475569;
+    border: none;
+    border-bottom: 3px solid transparent;
+    border-radius: 0;
+    padding: 0.6rem 1rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.tab-btn:hover {
+    color: #0284c7;
+    background: #f1f5f9;
+}
+
+.tab-btn.active {
+    color: #0284c7;
+    border-bottom-color: #0284c7;
+}
+
+.tab-panel {
+    display: none;
+}
+
+.tab-panel.active {
+    display: block;
+}
+
+/* --- 13. Tooltip flotante de observaciones --- */
+.tooltip-observacion {
+    display: inline-block;
+    color: #0284c7;
+    border-bottom: 1px dashed #0284c7;
+    cursor: help;
+    font-size: 0.85rem;
+}
+
+.tooltip-observacion:focus {
+    outline: 2px solid #38bdf8;
+    outline-offset: 2px;
+}
+
+.tooltip-flotante {
+    position: fixed;
+    z-index: 1100;
+    max-width: 300px;
+    background: #1e293b;
+    color: white;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    line-height: 1.35;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-100%);
+    transition: opacity 0.12s ease;
+}
+
+.tooltip-flotante.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* --- 14. Remito compartido --- */
+.remito {
+    background: white;
+    border: 2px solid #1e293b;
+    border-radius: 8px;
+    padding: 2rem;
+    max-width: 600px;
+    margin: 2rem auto;
+}
+
+.remito h2 {
+    text-align: center;
+    border-bottom: 2px solid #1e293b;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.remito-detalle {
+    margin-bottom: 0.5rem;
+}
+
+.remito-detalle strong {
+    display: inline-block;
+    width: 180px;
+}
+
+.remito-items {
+    margin: 1rem 0;
+    padding: 0;
+    list-style: none;
+}
+
+.remito-items li {
+    padding: 0.3rem 0;
+    border-bottom: 1px dashed #e2e8f0;
+}
+
+.remito-footer {
+    text-align: center;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 2px solid #1e293b;
+    font-size: 0.9rem;
+    color: #64748b;
+}
+
+.modal .remito {
+    margin: 0;
+    max-width: none;
+    padding: 1rem;
+    border-width: 1px;
+}
+
+.remito-acciones {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 1.5rem auto 0;
+}
+
+/* --- 15. Responsive de nuevos componentes --- */
+@media (max-width: 768px) {
+    .modal {
+        padding: 1.25rem;
+    }
+
+    .tabs {
+        gap: 0.25rem;
+    }
+
+    .tab-btn {
+        padding: 0.5rem 0.7rem;
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal {
+        padding: 1rem;
+    }
+
+    .modal-botones {
+        flex-direction: column;
+    }
+
+    .modal-botones button {
+        width: 100%;
+    }
+
+    .remito {
+        padding: 1rem;
+        margin: 1rem auto;
+    }
+
+    .remito-detalle strong {
+        width: 140px;
+        font-size: 0.85rem;
+    }
+
+    .remito-acciones {
+        flex-direction: column;
+    }
+
+    .remito-acciones button,
+    .remito-acciones a {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+/* --- 16. Página de inicio (login) ==================================================== */
+
+/*
+ * Layout del home basado en el boceto de dos paneles:
+ * - Tarjeta transparente que ocupa toda la pantalla sobre el fondo animado.
+ * - Panel izquierdo con la marca y el nombre de la escuela.
+ * - Panel derecho con el formulario y los logins de ejemplo plegables.
+ */
+
+.login-error {
+    background: #fee2e2;
+    color: #dc2626;
+    padding: 0.6rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    display: none;
+    font-size: 0.9rem;
+}
+
+.login-error.visible {
+    display: block;
+}
+
+.home-main {
+    min-height: 100vh;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    padding: clamp(1rem, 2.5vw, 2.5rem);
+}
+
+.home-card {
+    display: grid;
+    grid-template-columns: 1.35fr 1fr;
+    gap: clamp(1.25rem, 2.5vw, 2.5rem);
+    width: 100%;
+    max-width: 1500px;
+    min-height: calc(100vh - clamp(2rem, 5vw, 5rem));
+    padding: clamp(1.25rem, 2.5vw, 2.5rem);
+    background: transparent;
+    border: 1px solid #e2e8f0;
+    border-radius: 24px;
+}
+
+.home-brand,
+.home-login {
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+}
+
+.home-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: clamp(2rem, 5vw, 4rem);
+    background: transparent;
+    text-shadow: 0 2px 10px rgba(15, 23, 42, 0.22);
+}
+
+.home-brand h1 {
+    font-size: clamp(2.75rem, 5.5vw, 5rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: #0005a6;
+    margin-bottom: 0.9rem;
+}
+
+.home-brand p {
+    font-size: clamp(1.05rem, 1.6vw, 1.5rem);
+    line-height: 1.4;
+    color: #64748b;
+    max-width: 22ch;
+}
+
+.home-brand p.home-brand-tagline {
+    margin-top: 1rem;
+    font-size: clamp(0.9rem, 1.2vw, 1.1rem);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: #0005a6;
+    max-width: 30ch;
+}
+
+.home-login {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    justify-self: center;
+    align-self: center;
+    width: 100%;
+    max-width: 460px;
+    padding: clamp(1.5rem, 2.5vw, 2.5rem);
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+.home-login h2 {
+    font-size: clamp(1.4rem, 2vw, 1.8rem);
+    color: #1e293b;
+    margin-bottom: 1.25rem;
+}
+
+.btn-login {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+}
+
+.btn-login:hover {
+    background-color: #0369a1;
+}
+
+/* Cajita plegable con los usuarios de prueba */
+.home-demo {
+    margin-top: 1.5rem;
+    padding: 0.75rem 1rem;
+    background: transparent;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+}
+
+.home-demo summary {
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: #334155;
+    cursor: pointer;
+    list-style: none;
+}
+
+.home-demo summary::-webkit-details-marker {
+    display: none;
+}
+
+.home-demo summary::after {
+    content: '+';
+    float: right;
+    color: #0284c7;
+    font-weight: bold;
+}
+
+.home-demo[open] summary::after {
+    content: '\2212';
+}
+
+.home-demo ul {
+    list-style: none;
+    margin-top: 0.75rem;
+    font-size: 0.78rem;
+    line-height: 1.6;
+    color: #475569;
+}
+
+.home-demo li {
+    overflow-wrap: anywhere;
+}
+
+/* Responsive del home */
+@media (max-width: 900px) {
+    .home-main {
+        padding: 1rem;
+    }
+
+    .home-card {
+        grid-template-columns: 1fr;
+        min-height: auto;
+        padding: 1.25rem;
+        gap: 1.25rem;
+    }
+
+    .home-brand {
+        padding: 2.5rem 1.5rem;
+    }
+
+    .home-brand p {
+        max-width: none;
+    }
+
+    .home-login {
+        justify-self: stretch;
+        align-self: stretch;
+        max-width: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .home-main {
+        padding: 0.75rem;
+    }
+
+    .home-card {
+        padding: 0.9rem;
+        border-radius: 18px;
+        gap: 0.9rem;
+    }
+
+    .home-brand {
+        padding: 2rem 1rem;
+        border-radius: 14px;
+    }
+
+    .home-brand h1 {
+        font-size: 2.25rem;
+    }
+
+    .home-brand p {
+        font-size: 1rem;
+    }
+
+    .home-login {
+        padding: 1.25rem;
+        border-radius: 14px;
+    }
+
+    .home-demo ul {
+        font-size: 0.72rem;
+    }
+}

@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineStock - Modulo Panolero</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <style>
+        .acciones-reserva {
+            display: flex;
+            gap: 0.3rem;
+            flex-wrap: wrap;
+        }
+        .btn-sm {
+            padding: 3px 8px;
+            font-size: 0.75rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: white;
+        }
+        .btn-entregar { background: #0284c7; }
+        .btn-devolver-ok { background: #16a34a; }
+        .btn-devolver-faltantes { background: #d97706; }
+        .btn-reparacion { background: #b45309; }
+        .btn-notificar { background: #7c3aed; }
+        .btn-sm:disabled { background: #9ca3af; cursor: not-allowed; }
+        .filtro-fecha {
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 1rem;
+            align-items: end;
+        }
+        .filtro-fecha .form-group { min-width: 150px; }
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-overlay.visible { display: flex; }
+        .modal {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            max-width: 400px;
+            width: 90%;
+        }
+        .modal h3 { margin-top: 0; }
+        .modal textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin: 0.5rem 0;
+            resize: vertical;
+        }
+        .modal-botones {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>CineStock - Deposito (Panol)</h1>
+        <nav>
+            <ul>
+                <li><a href="#" id="btn-logout">Cerrar Sesion</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Pestañas: separan los informes del estado del inventario -->
+        <div class="tabs" role="tablist">
+            <button type="button" class="tab-btn active" data-tab="reservas" role="tab">Reservas</button>
+            <button type="button" class="tab-btn" data-tab="faltantes" role="tab">Faltantes</button>
+            <button type="button" class="tab-btn" data-tab="inventario" role="tab">Estado del Inventario</button>
+        </div>
+
+        <section id="tab-reservas" class="tab-panel active">
+            <h2>Gestion de Reservas y Devoluciones</h2>
+
+            <!-- Filtro por estado de reserva -->
+            <div class="filtro-fecha">
+                <div class="form-group">
+                    <label for="filtro-estado">Filtrar por estado:</label>
+                    <select id="filtro-estado">
+                        <option value="">Todos</option>
+                        <option value="reservado">Reservado (pendiente)</option>
+                        <option value="entregado">Entregado</option>
+                        <option value="devuelto_ok">Devuelto OK</option>
+                        <option value="devuelto_faltantes">Devuelto con faltantes</option>
+                        <option value="reparacion">En reparacion</option>
+                        <option value="cancelado">Cancelado</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Tabla dinámica de reservas -->
+            <div class="tabla-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID Reserva</th>
+                        <th>Alumno</th>
+                        <th>Equipos Solicitados</th>
+                        <th>Fecha Retiro</th>
+                        <th>Fecha Devolucion</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="reservas-tabla">
+                    <!-- Se llena dinámicamente con JavaScript -->
+                </tbody>
+            </table>
+            </div>
+        </section>
+
+        <section id="tab-faltantes" class="tab-panel">
+            <h2>Devoluciones con Faltantes</h2>
+            <p class="texto-secundario" style="margin-bottom:0.5rem;">
+                Pasa el mouse o enfoca la observacion para ver el detalle del faltante.
+            </p>
+            <div class="tabla-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID Reserva</th>
+                        <th>Alumno</th>
+                        <th>Equipos</th>
+                        <th>Fecha Devolucion</th>
+                        <th>Observacion</th>
+                    </tr>
+                </thead>
+                <tbody id="faltantes-tabla">
+                    <!-- Se llena dinámicamente con JavaScript -->
+                </tbody>
+            </table>
+            </div>
+        </section>
+
+        <section id="tab-inventario" class="tab-panel">
+            <h2>Estado del Inventario</h2>
+            <div class="tabla-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID Equipo</th>
+                        <th>Nombre</th>
+                        <th>Categoria</th>
+                        <th>Gama</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody id="inventario-panolero">
+                    <!-- Se llena dinámicamente con JavaScript -->
+                </tbody>
+            </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal para ingresar notas al devolver con faltantes -->
+    <div id="modal-notas" class="modal-overlay">
+        <div class="modal">
+            <h3>Notas de la devolucion</h3>
+            <p>Describe los faltantes o problemas encontrados:</p>
+            <textarea id="modal-notas-texto" rows="4" placeholder="Ej: Falta cable HDMI, rasguño en el cuerpo..."></textarea>
+            <div class="modal-botones">
+                <button class="btn-sm btn-devolver-faltantes" onclick="confirmarDevolucionFaltantes()">Confirmar</button>
+                <button class="btn-sm" style="background:#6b7280;" onclick="cerrarModal()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para enviar una notificacion al alumno -->
+    <div id="modal-notificacion" class="modal-overlay">
+        <div class="modal">
+            <h3>Notificacion para el alumno</h3>
+            <p>El mensaje se mostrara en el historial de la reserva:</p>
+            <textarea id="modal-notificacion-texto" rows="4" placeholder="Ej: Falta devolver el cable HDMI..."></textarea>
+            <div class="modal-botones">
+                <button class="btn-sm btn-notificar" onclick="confirmarNotificacion()">Enviar</button>
+                <button class="btn-sm" style="background:#6b7280;" onclick="cerrarModalNotificacion()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/datos.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/ui.js"></script>
+    <script src="../js/reservas.js"></script>
+
+    <script>
+    /**
+     * ================================================================
+     * PÁGINA DEL PAÑOLERO: GESTIÓN DE RESERVAS
+     * ================================================================
+     * El pañolero es quien entrega y recibe el equipamiento.
+     * Esta página muestra todas las reservas y permite:
+     *   1. Ver todas las reservas con sus detalles
+     *   2. Filtrar por estado
+     *   3. Marcar un equipo como "entregado" al alumno
+     *   4. Registrar devoluciones (OK o con faltantes)
+     *   5. Enviar notificaciones al alumno (vía notas)
+     *
+     * TRANSICIONES DE ESTADO PERMITIDAS:
+     *   reservado → entregado (el pañolero entrega el equipo)
+     *   entregado → devuelto_ok (el alumno devuelve todo bien)
+     *   entregado → devuelto_faltantes (el alumno devuelve con faltantes)
+     */
+
+    (async function() {
+        await Auth.init();
+        if (!Auth.verificarSesion()) return;
+        if (!Auth.verificarRol('panolero')) return;
+        await inicializarPanolero();
+    })();
+
+    // Variables globales para guardar la reserva que se está procesando en los modales
+    let reservaEnProceso = null;
+    let reservaNotificacion = null;
+    let tooltipFlotante = null;
+
+    async function inicializarPanolero() {
+        // Configurar botón de cerrar sesión
+        document.getElementById('btn-logout').addEventListener('click', async function(e) {
+            e.preventDefault();
+            await Auth.logout();
+            window.location.href = '/index.html';
+        });
+
+        // Configurar pestañas
+        document.querySelectorAll('.tab-btn').forEach(function(boton) {
+            boton.addEventListener('click', function() {
+                activarTab(boton.dataset.tab);
+            });
+        });
+
+        // Configurar filtro de estado
+        document.getElementById('filtro-estado').addEventListener('change', cargarReservas);
+
+        // Preparar tooltip flotante de observaciones
+        tooltipFlotante = document.createElement('div');
+        tooltipFlotante.className = 'tooltip-flotante';
+        document.body.appendChild(tooltipFlotante);
+        configurarTooltips();
+
+        // Cargar las reservas, los faltantes y el inventario
+        await recargarPanel();
+    }
+
+    function activarTab(nombre) {
+        document.querySelectorAll('.tab-btn').forEach(function(boton) {
+            boton.classList.toggle('active', boton.dataset.tab === nombre);
+        });
+
+        document.querySelectorAll('.tab-panel').forEach(function(panel) {
+            panel.classList.toggle('active', panel.id === 'tab-' + nombre);
+        });
+    }
+
+    async function recargarPanel() {
+        await Promise.all([
+            cargarReservas(),
+            cargarFaltantes(),
+            cargarInventario()
+        ]);
+    }
+
+    /**
+     * cargarReservas()
+     * Lee todas las reservas de localStorage, las filtra según
+     * el estado seleccionado y las muestra en la tabla.
+     * Resuelve los IDs de usuario y equipo a nombres legibles.
+     */
+    async function cargarReservas() {
+        const tbody = document.getElementById('reservas-tabla');
+        let reservas = await Reservas.obtenerTodasLasReservas();
+
+        // Filtrar por estado si se seleccionó uno
+        const filtroEstado = document.getElementById('filtro-estado').value;
+        if (filtroEstado) {
+            reservas = reservas.filter(r => r.estado === filtroEstado);
+        }
+
+        // Ordenar por fecha de creación (más recientes primero)
+        reservas.sort(function(a, b) {
+            return new Date(b.createdAt) - new Date(a.createdAt);
+        });
+
+        if (reservas.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#64748b;">No hay reservas para mostrar.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = '';
+
+        for (const reserva of reservas) {
+            // Resolver usuario
+            const usuario = await Datos.buscarUsuarioPorId(reserva.userId);
+            const nombreAlumno = usuario ? usuario.nombre : 'Desconocido';
+            const matricula = usuario ? usuario.matricula : 'N/A';
+
+            // Resolver equipos
+            const equipos = await Reservas.resolverEquiposReserva(reserva);
+            const nombresEquipos = equipos.map(e => e.nombre).join(', ');
+
+            // Badge de estado
+            const badges = {
+                reservado: '<span class="badge warning">Pendiente Entrega</span>',
+                entregado: '<span class="badge" style="background:#0284c7;">Entregado</span>',
+                devuelto_ok: '<span class="badge success">Devuelto OK</span>',
+                devuelto_faltantes: '<span class="badge danger">Devuelto con Faltantes</span>',
+                reparacion: '<span class="badge warning">En reparacion</span>',
+                cancelado: '<span class="badge" style="background:#6b7280;">Cancelado</span>'
+            };
+
+            // Botones de acción según el estado
+            let acciones = '';
+            if (reserva.estado === 'reservado') {
+                acciones =
+                    '<button class="btn-sm btn-entregar" onclick="entregarReserva(\'' + reserva.id + '\')">Entregar</button>' +
+                    '<button class="btn-sm btn-notificar" onclick="abrirModalNotificacion(\'' + reserva.id + '\')">Notificar</button>';
+            } else if (reserva.estado === 'entregado') {
+                acciones =
+                    '<button class="btn-sm btn-devolver-ok" onclick="devolverOK(\'' + reserva.id + '\')">Dev. OK</button>' +
+                    '<button class="btn-sm btn-devolver-faltantes" onclick="abrirModalFaltantes(\'' + reserva.id + '\')">Dev. Faltantes</button>' +
+                    '<button class="btn-sm btn-reparacion" onclick="enviarAReparacion(\'' + reserva.id + '\')">A reparacion</button>' +
+                    '<button class="btn-sm btn-notificar" onclick="abrirModalNotificacion(\'' + reserva.id + '\')">Notificar</button>';
+            } else {
+                acciones = '<span style="color:#64748b;font-size:0.8rem;">Sin acciones</span>';
+            }
+
+            const fila = document.createElement('tr');
+            fila.innerHTML =
+                '<td><strong>' + reserva.id.toUpperCase() + '</strong></td>' +
+                '<td>' + nombreAlumno + '<br><small>' + matricula + '</small></td>' +
+                '<td>' + nombresEquipos + '</td>' +
+                '<td>' + reserva.fechaRetiro + '</td>' +
+                '<td>' + reserva.fechaDevolucion + '</td>' +
+                '<td>' + (badges[reserva.estado] || reserva.estado) + '</td>' +
+                '<td><div class="acciones-reserva">' + acciones + '</div></td>';
+
+            tbody.appendChild(fila);
+        }
+    }
+
+    /**
+     * cargarInventario()
+     * Muestra el estado tecnico actual de todos los equipos.
+     */
+    async function cargarInventario() {
+        const equipos = await Datos.obtenerEquipos();
+        const tbody = document.getElementById('inventario-panolero');
+
+        const badges = {
+            disponible: '<span class="badge success">Disponible</span>',
+            prestado: '<span class="badge" style="background:#0284c7;">Prestado</span>',
+            mantenimiento: '<span class="badge warning">Mantenimiento</span>',
+            baja: '<span class="badge danger">Baja</span>'
+        };
+
+        tbody.innerHTML = '';
+
+        for (const equipo of equipos) {
+            const fila = document.createElement('tr');
+            fila.innerHTML =
+                '<td>' + equipo.codigoBarras + '</td>' +
+                '<td>' + equipo.nombre + '</td>' +
+                '<td style="text-transform:capitalize;">' + equipo.categoria + '</td>' +
+                '<td style="text-transform:capitalize;">' + equipo.gama + '</td>' +
+                '<td>' + (badges[equipo.estado] || equipo.estado) + '</td>';
+
+            tbody.appendChild(fila);
+        }
+    }
+
+    /**
+     * cargarFaltantes()
+     * Lista las reservas devueltas con faltantes y su observacion.
+     */
+    async function cargarFaltantes() {
+        const tbody = document.getElementById('faltantes-tabla');
+        const reservas = (await Reservas.obtenerTodasLasReservas())
+            .filter(function(reserva) {
+                return reserva.estado === 'devuelto_faltantes';
+            })
+            .sort(function(a, b) {
+                return new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt);
+            });
+
+        if (reservas.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#64748b;">No hay devoluciones con faltantes.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = '';
+
+        for (const reserva of reservas) {
+            const usuario = await Datos.buscarUsuarioPorId(reserva.userId);
+            const equipos = await Reservas.resolverEquiposReserva(reserva);
+            const nombresEquipos = equipos.map(function(equipo) {
+                return equipo.nombre;
+            }).join(', ');
+
+            const fila = document.createElement('tr');
+            fila.innerHTML =
+                '<td><strong>' + UI.escapar(reserva.id.toUpperCase()) + '</strong></td>' +
+                '<td>' + UI.escapar(usuario ? usuario.nombre : 'Desconocido') +
+                    '<br><small>' + UI.escapar(usuario ? usuario.matricula : 'N/A') + '</small></td>' +
+                '<td>' + UI.escapar(nombresEquipos || 'Sin equipos') + '</td>' +
+                '<td>' + UI.escapar(reserva.fechaDevolucion) + '</td>' +
+                '<td class="celda-observacion"></td>';
+
+            const observacion = document.createElement('span');
+            const texto = reserva.notas && reserva.notas.trim()
+                ? reserva.notas.trim()
+                : 'Sin observacion';
+
+            observacion.className = 'tooltip-observacion';
+            observacion.textContent = 'Ver observacion';
+            observacion.tabIndex = 0;
+            observacion.setAttribute('data-tooltip', texto);
+            observacion.setAttribute('aria-label', 'Observacion: ' + texto);
+
+            fila.querySelector('.celda-observacion').appendChild(observacion);
+            tbody.appendChild(fila);
+        }
+    }
+
+    /**
+     * Configura el tooltip flotante para las observaciones.
+     */
+    function configurarTooltips() {
+        document.addEventListener('mouseover', function(evento) {
+            const elemento = evento.target && evento.target.closest
+                ? evento.target.closest('.tooltip-observacion')
+                : null;
+            if (elemento) mostrarTooltip(elemento);
+        });
+
+        document.addEventListener('mouseout', function(evento) {
+            const elemento = evento.target && evento.target.closest
+                ? evento.target.closest('.tooltip-observacion')
+                : null;
+            if (elemento) ocultarTooltip();
+        });
+
+        document.addEventListener('focusin', function(evento) {
+            const elemento = evento.target && evento.target.closest
+                ? evento.target.closest('.tooltip-observacion')
+                : null;
+            if (elemento) mostrarTooltip(elemento);
+        });
+
+        document.addEventListener('focusout', function(evento) {
+            const elemento = evento.target && evento.target.closest
+                ? evento.target.closest('.tooltip-observacion')
+                : null;
+            if (elemento) ocultarTooltip();
+        });
+
+        window.addEventListener('scroll', ocultarTooltip, true);
+    }
+
+    function mostrarTooltip(elemento) {
+        const texto = elemento.getAttribute('data-tooltip') || '';
+        if (!texto || !tooltipFlotante) return;
+
+        tooltipFlotante.textContent = texto;
+        tooltipFlotante.classList.add('visible');
+        tooltipFlotante.style.transform = 'translateY(-100%)';
+
+        const rect = elemento.getBoundingClientRect();
+        const margen = 10;
+
+        tooltipFlotante.style.left = rect.left + 'px';
+        tooltipFlotante.style.top = (rect.top - margen) + 'px';
+
+        window.requestAnimationFrame(function() {
+            const tooltipRect = tooltipFlotante.getBoundingClientRect();
+
+            if (tooltipRect.top < 8) {
+                tooltipFlotante.style.transform = 'translateY(0)';
+                tooltipFlotante.style.top = (rect.bottom + margen) + 'px';
+            }
+
+            if (tooltipRect.right > window.innerWidth - 8) {
+                tooltipFlotante.style.left = Math.max(8, window.innerWidth - tooltipRect.width - 8) + 'px';
+            }
+        });
+    }
+
+    function ocultarTooltip() {
+        if (tooltipFlotante) {
+            tooltipFlotante.classList.remove('visible');
+        }
+    }
+
+    async function obtenerReserva(reservaId) {
+        const reservas = await Reservas.obtenerTodasLasReservas();
+        return reservas.find(function(reserva) {
+            return reserva.id === reservaId;
+        }) || null;
+    }
+
+    async function construirDetalleReserva(reserva, accion) {
+        if (!reserva) {
+            return '<p>No se encontro la reserva.</p>';
+        }
+
+        const usuario = await Datos.buscarUsuarioPorId(reserva.userId);
+        const equipos = await Reservas.resolverEquiposReserva(reserva);
+        const listaEquipos = equipos.map(function(equipo) {
+            return '<li>' + UI.escapar(equipo.nombre) +
+                ' <span class="texto-secundario">(' + UI.escapar(equipo.codigoBarras) + ')</span></li>';
+        }).join('');
+
+        return '<p><strong>Reserva:</strong> ' + UI.escapar(reserva.id.toUpperCase()) + '</p>' +
+            '<p><strong>Alumno:</strong> ' + UI.escapar(usuario ? usuario.nombre : 'Desconocido') + '</p>' +
+            '<p><strong>Accion:</strong> ' + UI.escapar(accion) + '</p>' +
+            (listaEquipos
+                ? '<p><strong>Equipos:</strong></p><ul class="modal-lista">' + listaEquipos + '</ul>'
+                : '');
+    }
+
+    /**
+     * entregarReserva(reservaId)
+     * Cambia el estado de "reservado" a "entregado".
+     * Se llama al hacer clic en el botón "Entregar".
+     *
+     * @param {string} reservaId - ID de la reserva
+     */
+    async function entregarReserva(reservaId) {
+        const reserva = await obtenerReserva(reservaId);
+        const confirmado = await UI.confirmar({
+            titulo: 'Confirmar entrega',
+            mensaje: '¿Confirmas la entrega de esta reserva al alumno?',
+            detalleHTML: await construirDetalleReserva(reserva, 'Entregar equipos al alumno'),
+            textoConfirmar: 'Si, entregar',
+            textoCancelar: 'Cancelar',
+            claseConfirmar: 'btn-action'
+        });
+
+        if (!confirmado) return;
+
+        const resultado = await Reservas.cambiarEstadoReserva(reservaId, 'entregado');
+        if (resultado.exito) {
+            await recargarPanel();
+        } else {
+            alert(resultado.mensaje);
+        }
+    }
+
+    /**
+     * devolverOK(reservaId)
+     * Cambia el estado de "entregado" a "devuelto_ok".
+     * Se llama al hacer clic en "Dev. OK".
+     *
+     * @param {string} reservaId - ID de la reserva
+     */
+    async function devolverOK(reservaId) {
+        const reserva = await obtenerReserva(reservaId);
+        const confirmado = await UI.confirmar({
+            titulo: 'Confirmar devolucion',
+            mensaje: '¿Confirmas que el alumno devolvio todos los equipos en orden?',
+            detalleHTML: await construirDetalleReserva(reserva, 'Registrar devolucion OK'),
+            textoConfirmar: 'Si, devolucion OK',
+            textoCancelar: 'Cancelar',
+            claseConfirmar: 'btn-success'
+        });
+
+        if (!confirmado) return;
+
+        const resultado = await Reservas.cambiarEstadoReserva(reservaId, 'devuelto_ok');
+        if (resultado.exito) {
+            await recargarPanel();
+        } else {
+            alert(resultado.mensaje);
+        }
+    }
+
+    async function enviarAReparacion(reservaId) {
+        const reserva = await obtenerReserva(reservaId);
+        const confirmado = await UI.confirmar({
+            titulo: 'Confirmar reparacion',
+            mensaje: '¿Confirmas que los equipos pasan a reparacion?',
+            detalleHTML: await construirDetalleReserva(reserva, 'Enviar equipos a reparacion'),
+            textoConfirmar: 'Si, enviar',
+            textoCancelar: 'Cancelar',
+            claseConfirmar: 'btn-reparacion'
+        });
+
+        if (!confirmado) return;
+
+        const resultado = await Reservas.cambiarEstadoReserva(reservaId, 'reparacion');
+        if (resultado.exito) {
+            await recargarPanel();
+        } else {
+            alert(resultado.mensaje);
+        }
+    }
+
+    /**
+     * abrirModalFaltantes(reservaId)
+     * Abre el modal para ingresar notas cuando la devolución tiene faltantes.
+     *
+     * @param {string} reservaId - ID de la reserva
+     */
+    function abrirModalFaltantes(reservaId) {
+        reservaEnProceso = reservaId;
+        document.getElementById('modal-notas-texto').value = '';
+        document.getElementById('modal-notas').classList.add('visible');
+    }
+
+    /**
+     * cerrarModal()
+     * Cierra el modal de notas.
+     */
+    function cerrarModal() {
+        document.getElementById('modal-notas').classList.remove('visible');
+        reservaEnProceso = null;
+    }
+
+    /**
+     * confirmarDevolucionFaltantes()
+     * Confirma la devolución con faltantes, guardando las notas.
+     */
+    async function confirmarDevolucionFaltantes() {
+        if (!reservaEnProceso) return;
+
+        const reservaId = reservaEnProceso;
+        const notas = document.getElementById('modal-notas-texto').value.trim();
+        const reserva = await obtenerReserva(reservaId);
+
+        cerrarModal();
+
+        const confirmado = await UI.confirmar({
+            titulo: 'Confirmar devolucion con faltantes',
+            mensaje: '¿Confirmas registrar la devolucion con faltantes?',
+            detalleHTML: (await construirDetalleReserva(reserva, 'Registrar devolucion con faltantes')) +
+                '<p><strong>Observacion:</strong> ' + UI.escapar(notas || 'Sin observacion') + '</p>',
+            textoConfirmar: 'Si, registrar',
+            textoCancelar: 'Volver',
+            claseConfirmar: 'btn-devolver-faltantes'
+        });
+
+        if (!confirmado) {
+            abrirModalFaltantes(reservaId);
+            document.getElementById('modal-notas-texto').value = notas;
+            return;
+        }
+
+        const resultado = await Reservas.cambiarEstadoReserva(reservaId, 'devuelto_faltantes', notas);
+        if (resultado.exito) {
+            await recargarPanel();
+        } else {
+            alert(resultado.mensaje);
+        }
+    }
+
+    function abrirModalNotificacion(reservaId) {
+        reservaNotificacion = reservaId;
+        document.getElementById('modal-notificacion-texto').value = '';
+        document.getElementById('modal-notificacion').classList.add('visible');
+    }
+
+    function cerrarModalNotificacion() {
+        document.getElementById('modal-notificacion').classList.remove('visible');
+        reservaNotificacion = null;
+    }
+
+    async function confirmarNotificacion() {
+        if (!reservaNotificacion) return;
+
+        const mensaje = document.getElementById('modal-notificacion-texto').value.trim();
+        if (!mensaje) {
+            alert('Ingrese un mensaje para el alumno.');
+            return;
+        }
+
+        const reservaId = reservaNotificacion;
+        const reserva = await obtenerReserva(reservaId);
+
+        cerrarModalNotificacion();
+
+        const confirmado = await UI.confirmar({
+            titulo: 'Confirmar notificacion',
+            mensaje: '¿Confirmas el envio de esta notificacion al alumno?',
+            detalleHTML: (await construirDetalleReserva(reserva, 'Enviar notificacion')) +
+                '<p><strong>Mensaje:</strong> ' + UI.escapar(mensaje) + '</p>',
+            textoConfirmar: 'Si, enviar',
+            textoCancelar: 'Volver',
+            claseConfirmar: 'btn-notificar'
+        });
+
+        if (!confirmado) {
+            abrirModalNotificacion(reservaId);
+            document.getElementById('modal-notificacion-texto').value = mensaje;
+            return;
+        }
+
+        const resultado = await Reservas.enviarNotificacion(reservaId, mensaje);
+        if (resultado.exito) {
+            await recargarPanel();
+        } else {
+            alert(resultado.mensaje);
+        }
+    }
+    </script>
+</body>
+</html>

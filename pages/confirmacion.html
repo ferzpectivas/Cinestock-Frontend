@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineStock - Reserva Confirmada</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <style>
+        .remito {
+            background: white;
+            border: 2px solid #1e293b;
+            border-radius: 8px;
+            padding: 2rem;
+            max-width: 600px;
+            margin: 2rem auto;
+        }
+        .remito h2 {
+            text-align: center;
+            border-bottom: 2px solid #1e293b;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .remito-detalle {
+            margin-bottom: 0.5rem;
+        }
+        .remito-detalle strong {
+            display: inline-block;
+            width: 180px;
+        }
+        .remito-items {
+            margin: 1rem 0;
+            padding: 0;
+            list-style: none;
+        }
+        .remito-items li {
+            padding: 0.3rem 0;
+            border-bottom: 1px dashed #e2e8f0;
+        }
+        .remito-footer {
+            text-align: center;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 2px solid #1e293b;
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+        .btn-volver {
+            display: block;
+            width: fit-content;
+            margin: 1.5rem auto 0;
+            padding: 0.6rem 2rem;
+            background: #0284c7;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>CineStock</h1>
+    </header>
+
+    <main>
+        <!-- El contenido se llena dinámicamente con JavaScript -->
+        <div id="confirmacion-contenido">
+            <p style="text-align:center;">Cargando...</p>
+        </div>
+    </main>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/datos.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/ui.js"></script>
+    <script src="../js/impresion.js"></script>
+    <script src="../js/reservas.js"></script>
+    <script src="../js/remito.js"></script>
+
+    <script>
+    /**
+     * ================================================================
+     * PÁGINA DE CONFIRMACIÓN DE RESERVA
+     * ================================================================
+     * Muestra los detalles de la reserva que acaba de crear el alumno.
+     * Lee el ID de la reserva desde localStorage (cinestock_ultima_reserva)
+     * y muestra un "remito" digital con todos los datos.
+     *
+     * FLUJO:
+     *   1. alumno.html guarda el ID de la reserva en localStorage
+     *   2. Esta página lee ese ID
+     *   3. Busca la reserva completa en datos.json (via Reservas)
+     *   4. Resuelve los IDs de equipos a nombres
+     *   5. Muestra el remito con todos los datos
+     */
+
+    (async function() {
+        await Auth.init();
+        if (!Auth.verificarSesion()) return;
+        await mostrarConfirmacion();
+    })();
+
+    let remitoActual = null;
+
+    async function mostrarConfirmacion() {
+        const contenedor = document.getElementById('confirmacion-contenido');
+
+        // Obtener el ID de la reserva recién creada
+        const reservaId = localStorage.getItem('cinestock_ultima_reserva');
+
+        if (!reservaId) {
+            contenedor.innerHTML =
+                '<section class="confirmation-card">' +
+                    '<h2>No se encontró la reserva</h2>' +
+                    '<p>Volvé al catálogo para crear una nueva reserva.</p>' +
+                    '<a href="alumno.html" class="btn-volver">Volver al Catálogo</a>' +
+                '</section>';
+            return;
+        }
+
+        // Buscar la reserva completa
+        const todasLasReservas = await Reservas.obtenerTodasLasReservas();
+        const reserva = todasLasReservas.find(r => r.id === reservaId);
+
+        if (!reserva) {
+            contenedor.innerHTML =
+                '<section class="confirmation-card">' +
+                    '<h2>Reserva no encontrada</h2>' +
+                    '<p>La reserva podría haber sido eliminada.</p>' +
+                    '<a href="alumno.html" class="btn-volver">Volver al Catálogo</a>' +
+                '</section>';
+            return;
+        }
+
+        // Obtener datos del usuario y de los equipos
+        const datos = await Remito.obtenerDatos(reserva);
+        remitoActual = { reserva, usuario: datos.usuario, equipos: datos.equipos };
+
+        contenedor.innerHTML =
+            Remito.construirHTML(reserva, datos.usuario, datos.equipos) +
+            '<div class="remito-acciones">' +
+                '<button type="button" class="btn-action" onclick="descargarRemito()">Descargar PDF</button>' +
+                '<a href="alumno.html" class="btn-volver" style="margin:0;">Volver al Catálogo</a>' +
+            '</div>';
+
+        // Limpiar el ID de la reserva de localStorage (ya no se necesita)
+        localStorage.removeItem('cinestock_ultima_reserva');
+    }
+
+    async function descargarRemito() {
+        if (!remitoActual) return;
+        await Remito.imprimir(remitoActual.reserva, remitoActual.usuario, remitoActual.equipos);
+    }
+    </script>
+</body>
+</html>

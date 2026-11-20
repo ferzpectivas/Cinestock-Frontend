@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineStock - Inicio de Sesion</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        #animacion-fondo {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+        #animacion-fondo canvas {
+            display: block;
+        }
+        body {
+            background: transparent !important;
+        }
+        body > main {
+            position: relative;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+    <div id="animacion-fondo"></div>
+
+    <main class="home-main">
+        <div class="home-card">
+            <section class="home-brand">
+                <h1>Cinestock</h1>
+                <p>Escuela de Artes Audiovisuales "Lumiere"</p>
+                <p class="home-brand-tagline">Sistema de préstamos de equipos Audiovisuales</p>
+            </section>
+
+            <section class="home-login">
+                <h2>Iniciar Sesión</h2>
+
+                <!-- Mensaje de error que se muestra si las credenciales son incorrectas -->
+                <div id="login-error" class="login-error"></div>
+
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="usuario">Matrícula</label>
+                        <input type="text" id="usuario" name="usuario" placeholder="Ingrese su matrícula" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Contraseña</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <button type="submit" class="btn-login">Ingresar</button>
+                </form>
+
+                <!-- Usuarios de prueba para facilitar el testing -->
+                <details class="home-demo">
+                    <summary>Logins de ejemplo</summary>
+                    <ul>
+                        <li>Alumno: 2025-1001 / cine123 (2 anio)</li>
+                        <li>Alumno: 2024-1002 / cine123 (3 anio)</li>
+                        <li>Alumno: 2023-1003 / cine123 (4 anio)</li>
+                        <li>Alumno: 2025-1004 / cine123 (1 anio)</li>
+                        <li>Panolero: ADMIN-001 / panol2026</li>
+                        <li>Panolero: ADMIN-002 / panol2026</li>
+                        <li>Director: DIR-001 / director2026</li>
+                        <li>Director: DIR-002 / director2026</li>
+                    </ul>
+                </details>
+            </section>
+        </div>
+    </main>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    <script src="assets/animacion.js"></script>
+
+    <script>
+    (async function() {
+        await Auth.init();
+
+        if (Auth.isLoggedIn()) {
+            window.location.href = Auth.rutaInicio(Auth.getUsuarioActual().rol);
+            return;
+        }
+
+        document.getElementById('login-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const matricula = document.getElementById('usuario').value.trim();
+            const password = document.getElementById('password').value;
+            const errorEl = document.getElementById('login-error');
+
+            errorEl.classList.remove('visible');
+
+            if (!matricula || !password) {
+                errorEl.textContent = 'Complete todos los campos.';
+                errorEl.classList.add('visible');
+                return;
+            }
+
+            try {
+                const usuario = await Auth.login(matricula, password);
+                window.location.href = Auth.rutaInicio(usuario.rol);
+            } catch (error) {
+                errorEl.textContent = error.message;
+                errorEl.classList.add('visible');
+            }
+        });
+    })();
+    </script>
+
+</body>
+</html>
